@@ -1,0 +1,86 @@
+# Xcode
+#
+build/
+DerivedData/
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xcuserstate
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+
+# SwiftPM
+#
+.swiftpm/
+.build/
+Package.resolved
+
+# CocoaPods
+#
+Pods/
+Podfile.lock
+
+# Carthage
+#
+Carthage/Build/
+
+# Fastlane
+#
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Firebase
+#
+*.plist
+
+# Playgrounds
+#
+timeline.xctimeline
+playground.xcworkspace
+
+# App data
+#
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# IDEs
+#
+.idea/
+*.iml
+
+# Misc
+#
+*.log
+*.DS_Store
+*.swp
+*.swo
+.env
+
+# Symbols
+#
+*.dSYM.zip
+*.dSYM
+
+# Archive
+#
+*.xcarchive
+
+# Tests
+#
+test-output/
+
+# Xcode previews
+#
+*.preview-thumbnails
+
+# Tuist
+#
+Tuist/Dependencies/
+
+# SwiftGen
+#
+*.swiftgen.generated.swift
