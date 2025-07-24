@@ -1,20 +1,38 @@
 import Foundation
+import SwiftData
 
-struct Capsule: Identifiable, Codable {
-    var id: UUID = UUID()
+@Model
+class Capsule {
+    @Attribute(.unique) var id: UUID
     var title: String
-    var description: String
+    var summary: String
     var unlockDate: Date
-    var media: [CapsuleMedia]
+    @Relationship(deleteRule: .cascade) var media: [CapsuleMedia]
+
+    init(title: String, summary: String, unlockDate: Date, media: [CapsuleMedia]) {
+        self.id = UUID()
+        self.title = title
+        self.summary = summary
+        self.unlockDate = unlockDate
+        self.media = media
+    }
 }
 
-enum CapsuleMediaType: String, Codable {
-    case image, video, audio, text
-}
-
-struct CapsuleMedia: Identifiable, Codable {
-    var id: UUID = UUID()
+@Model
+class CapsuleMedia {
+    @Attribute(.unique) var id: UUID
     var type: CapsuleMediaType
-    var url: URL? // For image/video/audio
-    var text: String? // For text messages
+    var url: URL?
+    var text: String?
+
+    init(type: CapsuleMediaType, url: URL?, text: String?) {
+        self.id = UUID()
+        self.type = type
+        self.url = url
+        self.text = text
+    }
+}
+
+enum CapsuleMediaType: String, Codable, CaseIterable {
+    case image, video, audio, text
 }

@@ -7,7 +7,7 @@ struct NewCapsuleView: View {
     var onSave: ((Capsule) -> Void)? = nil
     @Environment(\.presentationMode) private var presentationMode
     @State private var title: String = ""
-    @State private var description: String = ""
+    @State private var summary: String = ""
     @State private var unlockDate: Date = Date().addingTimeInterval(3600)
     @State private var media: [CapsuleMedia] = []
     @State private var showImagePicker = false
@@ -34,7 +34,7 @@ struct NewCapsuleView: View {
     @State private var isRecording = false
     @State private var audioRecordingURL: URL? = nil
     @State private var audioRecordingError: String? = nil
-    // For demo, audio recording is not implemented
+    @Environment(\.modelContext) private var context
     
     var body: some View {
         NavigationView {
@@ -47,7 +47,7 @@ struct NewCapsuleView: View {
                         if showValidation && title.isEmpty {
                             Text("Title is required").foregroundColor(.red).font(.caption)
                         }
-                        TextField("Description", text: $description)
+                        TextField("Description", text: $summary)
                         DatePicker("Unlock Date", selection: $unlockDate, in: Date()..., displayedComponents: [.date, .hourAndMinute])
                     }
                     Section(header: Text("Add Media")) {
@@ -214,18 +214,17 @@ struct NewCapsuleView: View {
     private func saveCapsule() {
         showValidation = true
         guard !title.isEmpty, !media.isEmpty else { return }
-        isSaving = true
-        let newCapsule = Capsule(title: title, description: description, unlockDate: unlockDate, media: media)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            onSave?(newCapsule)
-            title = ""
-            description = ""
-            unlockDate = Date().addingTimeInterval(3600)
-            media = []
-            isSaving = false
-            showValidation = false
-            presentationMode.wrappedValue.dismiss()
-        }
+
+        let capsule = Capsule(title: title, summary: summary, unlockDate: unlockDate, media: media)
+        context.insert(capsule)
+
+        try? context.save()
+        title = ""
+        summary = ""
+        unlockDate = Date().addingTimeInterval(3600)
+        media = []
+        showValidation = false
+        presentationMode.wrappedValue.dismiss()
     }
     
     // Audio recording helpers
@@ -255,29 +254,5 @@ struct NewCapsuleView: View {
         audioRecordingURL = audioRecorder?.url
         isRecording = false
         audioRecorder = nil
-    }
-}
-
-struct CapsuleMediaButton: View {
-    let title: String
-    let systemImage: String
-    let color: Color
-    let action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            VStack {
-                Image(systemName: systemImage)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(18)
-                    .background(color)
-                    .clipShape(Circle())
-                    .shadow(radius: 2)
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.primary)
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
