@@ -17,7 +17,7 @@ struct CapsuleMediaPreview: View {
         HStack(alignment: .center, spacing: 12) {
             switch media.type {
             case .image:
-                if let url = media.url, let uiImage = UIImage(contentsOfFile: url.path) {
+                if let url = media.fileURL, let uiImage = UIImage(contentsOfFile: url.path) {
                     Button(action: { showImageFullScreen = true }) {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -38,7 +38,7 @@ struct CapsuleMediaPreview: View {
                 }
             case .video:
                 ZStack {
-                    if let url = media.url {
+                    if let url = media.fileURL {
                         VideoThumbnailView(url: url)
                             .frame(width: 60, height: 60)
                             .cornerRadius(8)
@@ -67,7 +67,7 @@ struct CapsuleMediaPreview: View {
                     .foregroundColor(.orange)
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
-                if let url = media.url {
+                if let url = media.fileURL {
                     Button(action: {
                         if isPlaying {
                             pauseAudio()
@@ -122,7 +122,7 @@ struct CapsuleMediaPreview: View {
                         .font(.body)
                         .foregroundColor(.primary)
                         .lineLimit(3)
-                } else if let url = media.url {
+                } else if let url = media.fileURL {
                     Text(url.lastPathComponent)
                         .font(.caption)
                         .foregroundColor(.gray)
@@ -145,7 +145,7 @@ struct CapsuleMediaPreview: View {
         .onDisappear { stopAudio() }
         // Full screen image
         .fullScreenCover(isPresented: $showImageFullScreen) {
-            if let url = media.url, let uiImage = UIImage(contentsOfFile: url.path) {
+            if let url = media.fileURL, let uiImage = UIImage(contentsOfFile: url.path) {
                 ZStack(alignment: .topTrailing) {
                     Color.black.ignoresSafeArea()
                     Image(uiImage: uiImage)
@@ -164,7 +164,7 @@ struct CapsuleMediaPreview: View {
         }
         // Full screen video
         .fullScreenCover(isPresented: $showVideoFullScreen) {
-            if let url = media.url {
+            if let url = media.fileURL {
                 ZStack(alignment: .topTrailing) {
                     Color.black.ignoresSafeArea()
                     VideoPlayer(player: AVPlayer(url: url))

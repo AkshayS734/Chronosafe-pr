@@ -5,30 +5,46 @@
 //  Created by Akshay Shukla on 24/07/25.
 //
 
-import Foundation
 import SwiftUI
+import AVKit
 
 struct CapsuleDetailView: View {
     let capsule: Capsule
+
     var body: some View {
-        VStack {
-            Text(capsule.title)
-                .font(.largeTitle)
-            Text(capsule.summary)
-                .padding()
-            Text("Unlocks: \(capsule.unlockDate, formatter: dateFormatter)")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            Spacer()
-            Text(Date() < capsule.unlockDate ? "Locked" : "Unlocked")
-                .font(.title2)
-                .foregroundColor(Date() < capsule.unlockDate ? .red : .green)
-            Spacer()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(capsule.title)
+                    .font(.largeTitle)
+                    .padding(.top)
+                Text(capsule.summary)
+                    .font(.body)
+
+                Text("Unlocks: \(capsule.unlockDate, formatter: dateFormatter)")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+
+                Text(Date() < capsule.unlockDate ? "Locked" : "Unlocked")
+                    .font(.title2)
+                    .foregroundColor(Date() < capsule.unlockDate ? .red : .green)
+
+                if !capsule.media.isEmpty {
+                    Divider()
+                    Text("Media")
+                        .font(.headline)
+                    ForEach(capsule.media) { media in
+                        CapsuleMediaDisplay(media: media)
+                    }
+                }
+
+                Spacer()
+            }
+            .padding()
         }
-        .padding()
         .navigationTitle("Capsule Detail")
     }
 }
+
 private let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateStyle = .medium

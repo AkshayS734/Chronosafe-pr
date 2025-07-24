@@ -21,18 +21,23 @@ struct VideoThumbnailView: View {
             generateThumbnail()
         }
     }
+    
     private func generateThumbnail() {
-        DispatchQueue.global().async {
-            let asset = AVAsset(url: url)
-            let imageGenerator = AVAssetImageGenerator(asset: asset)
-            imageGenerator.appliesPreferredTrackTransform = true
-            let time = CMTime(seconds: 0.1, preferredTimescale: 600)
-            if let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) {
-                let uiImage = UIImage(cgImage: cgImage)
-                DispatchQueue.main.async {
-                    self.thumbnail = uiImage
-                }
+        let asset = AVURLAsset(url: url)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        imageGenerator.appliesPreferredTrackTransform = true
+        let time = CMTime(seconds: 0.1, preferredTimescale: 600)
+
+        imageGenerator.generateCGImageAsynchronously(for: time) { cgImage, actualTime, error in
+            guard let cgImage = cgImage, error == nil else {
+                print("Failed to generate thumbnail: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+
+            let uiImage = UIImage(cgImage: cgImage)
+            DispatchQueue.main.async {
+                self.thumbnail = uiImage
             }
         }
     }
-} 
+}

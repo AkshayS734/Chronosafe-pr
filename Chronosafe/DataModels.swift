@@ -9,6 +9,7 @@ class Capsule {
     var unlockDate: Date
     @Relationship(deleteRule: .cascade) var media: [CapsuleMedia]
 
+
     init(title: String, summary: String, unlockDate: Date, media: [CapsuleMedia]) {
         self.id = UUID()
         self.title = title
@@ -22,15 +23,21 @@ class Capsule {
 class CapsuleMedia {
     @Attribute(.unique) var id: UUID
     var type: CapsuleMediaType
-    var url: URL?
+    var filename: String?
     var text: String?
-
-    init(type: CapsuleMediaType, url: URL?, text: String?) {
+    @Relationship(inverse: \Capsule.media) var capsule: Capsule?
+    
+    init(type: CapsuleMediaType, filename: String?, text: String?) {
         self.id = UUID()
         self.type = type
-        self.url = url
+        self.filename = filename
         self.text = text
     }
+    var fileURL: URL? {
+            guard let filename else { return nil }
+            return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
+                .appendingPathComponent(filename)
+        }
 }
 
 enum CapsuleMediaType: String, Codable, CaseIterable {

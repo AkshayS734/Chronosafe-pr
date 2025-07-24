@@ -35,6 +35,7 @@ struct NewCapsuleView: View {
     @State private var audioRecordingURL: URL? = nil
     @State private var audioRecordingError: String? = nil
     @Environment(\.modelContext) private var context
+    @EnvironmentObject var dataController: DataController
     
     var body: some View {
         NavigationView {
@@ -89,7 +90,7 @@ struct NewCapsuleView: View {
                                     .border(Color.gray)
                                 HStack {
                                     Button("Add") {
-                                        let textMedia = CapsuleMedia(type: .text, url: nil, text: newText)
+                                        let textMedia = CapsuleMedia(type: .text, filename: nil, text: newText)
                                         media.append(textMedia)
                                         newText = ""
                                         showTextInputBar = false
@@ -126,8 +127,12 @@ struct NewCapsuleView: View {
                                     }
                                     if let url = audioRecordingURL, !isRecording {
                                         Button("Add") {
-                                            let audioMedia = CapsuleMedia(type: .audio, url: url, text: nil)
-                                            media.append(audioMedia)
+                                            if let url = audioRecordingURL, !isRecording {
+                                                if let filename = dataController.persistMediaFile(originalURL: url, fileExtension: url.pathExtension) {
+                                                    let audioMedia = CapsuleMedia(type: .audio, filename: filename, text: nil)
+                                                    media.append(audioMedia)
+                                                }
+                                            }
                                             audioRecordingURL = nil
                                             showAudioRecorderBar = false
                                         }
@@ -192,8 +197,10 @@ struct NewCapsuleView: View {
             .fullScreenCover(isPresented: $showUIKitImagePicker) {
                 ImageVideoPicker(sourceType: pickedSourceType, mediaType: .image) { url in
                     if let url = url {
-                        let mediaItem = CapsuleMedia(type: .image, url: url, text: nil)
-                        media.append(mediaItem)
+                        if let filename = dataController.persistMediaFile(originalURL: url, fileExtension: url.pathExtension) {
+                            let mediaItem = CapsuleMedia(type: .image, filename: filename, text: nil)
+                            media.append(mediaItem)
+                        }
                     }
                     showUIKitImagePicker = false
                 }
@@ -202,8 +209,10 @@ struct NewCapsuleView: View {
             .fullScreenCover(isPresented: $showUIKitVideoPicker) {
                 ImageVideoPicker(sourceType: pickedSourceType, mediaType: .video) { url in
                     if let url = url {
-                        let mediaItem = CapsuleMedia(type: .video, url: url, text: nil)
-                        media.append(mediaItem)
+                        if let filename = dataController.persistMediaFile(originalURL: url, fileExtension: url.pathExtension) {
+                            let mediaItem = CapsuleMedia(type: .video, filename: filename, text: nil)
+                            media.append(mediaItem)
+                        }
                     }
                     showUIKitVideoPicker = false
                 }
@@ -216,9 +225,14 @@ struct NewCapsuleView: View {
         guard !title.isEmpty, !media.isEmpty else { return }
 
         let capsule = Capsule(title: title, summary: summary, unlockDate: unlockDate, media: media)
-        context.insert(capsule)
 
-        try? context.save()
+        for m in capsule.media {
+            m.capsule = capsule
+        }
+        
+        dataController.addCapsule(capsule)
+
+        // Reset state
         title = ""
         summary = ""
         unlockDate = Date().addingTimeInterval(3600)
