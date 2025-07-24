@@ -29,18 +29,49 @@ struct ImageVideoPicker: UIViewControllerRepresentable {
     
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
         let parent: ImageVideoPicker
-        init(_ parent: ImageVideoPicker) { self.parent = parent }
+        
+        init(_ parent: ImageVideoPicker) {
+            self.parent = parent
+        }
+        
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if parent.mediaType == .image, let imageURL = info[.imageURL] as? URL {
-                parent.completion(imageURL)
+            if parent.mediaType == .image {
+                if let imageURL = info[.imageURL] as? URL {
+                    // Works for images picked from photo library
+                    parent.completion(imageURL)
+                } else if let image = info[.originalImage] as? UIImage {
+                    // Fallback for camera captures (no imageURL)
+                    if let data = image.jpegData(compressionQuality: 0.9) {
+                        let filename = UUID().uuidString + ".jpg"
+                        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+                        do {
+                            try data.write(to: fileURL)
+                            print("Saved captured image to temp: \(fileURL.path)")
+                            parent.completion(fileURL)
+                        } catch {
+                            print("Failed to save captured image: \(error)")
+                            parent.completion(nil)
+                        }
+                    } else {
+                        print("Failed to convert image to JPEG")
+                        parent.completion(nil)
+                    }
+                } else {
+                    print("No image found")
+                    parent.completion(nil)
+                }
             } else if parent.mediaType == .video, let videoURL = info[.mediaURL] as? URL {
                 parent.completion(videoURL)
             } else {
                 parent.completion(nil)
             }
+            
+            picker.dismiss(animated: true)
         }
+        
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.completion(nil)
+            picker.dismiss(animated: true)
         }
     }
 }
