@@ -22,7 +22,7 @@ struct CapsuleMediaPreview: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 60, height: 60)
                             .clipped()
                             .cornerRadius(8)
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.blue, lineWidth: 1))
@@ -31,7 +31,7 @@ struct CapsuleMediaPreview: View {
                 } else {
                     Image(systemName: "photo")
                         .resizable()
-                        .frame(width: 40, height: 40)
+                        .frame(width: 60, height: 60)
                         .foregroundColor(.blue)
                         .background(Color(.systemGray6))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -40,7 +40,7 @@ struct CapsuleMediaPreview: View {
                 ZStack {
                     if let url = media.url {
                         VideoThumbnailView(url: url)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 60, height: 60)
                             .cornerRadius(8)
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.purple, lineWidth: 1))
                         Button(action: { showVideoFullScreen = true }) {
@@ -54,7 +54,7 @@ struct CapsuleMediaPreview: View {
                     } else {
                         Image(systemName: "video")
                             .resizable()
-                            .frame(width: 40, height: 40)
+                            .frame(width: 60, height: 60)
                             .foregroundColor(.purple)
                             .background(Color(.systemGray6))
                             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -63,7 +63,7 @@ struct CapsuleMediaPreview: View {
             case .audio:
                 Image(systemName: "mic")
                     .resizable()
-                    .frame(width: 40, height: 40)
+                    .frame(width: 60, height: 60)
                     .foregroundColor(.orange)
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 8))

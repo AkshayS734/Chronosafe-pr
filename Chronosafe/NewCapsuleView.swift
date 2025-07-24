@@ -1,7 +1,7 @@
 import SwiftUI
 import PhotosUI
 import AVFoundation
-import AVKit // <-- Add this for VideoPlayer
+import AVKit
 
 struct NewCapsuleView: View {
     var onSave: ((Capsule) -> Void)? = nil
@@ -38,62 +38,45 @@ struct NewCapsuleView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Capsule Info Section
-                    GroupBox(label: Label("Capsule Info", systemImage: "info.circle").font(.headline)) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            // Reduced size and padding for title
-                            TextField("Title", text: $title)
-                                .font(.headline)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 6)
-                                .background(Color(.secondarySystemBackground))
-                                .cornerRadius(8)
-                                .frame(height: 36)
-                            if showValidation && title.isEmpty {
-                                Text("Title is required").foregroundColor(.red).font(.caption)
-                            }
-                            TextField("Description", text: $description)
-                                .padding()
-                                .background(Color(.secondarySystemBackground))
-                                .cornerRadius(10)
-                            DatePicker("Unlock Date", selection: $unlockDate, in: Date()..., displayedComponents: [.date, .hourAndMinute])
-                                .padding(.vertical, 4)
+            VStack(spacing: 0) {
+                // Capsule Info Section as native Form (full width, no background)
+                Form {
+                    Section(header: Text("Capsule Info")) {
+                        TextField("Title", text: $title)
+                            .font(.headline)
+                        if showValidation && title.isEmpty {
+                            Text("Title is required").foregroundColor(.red).font(.caption)
                         }
+                        TextField("Description", text: $description)
+                        DatePicker("Unlock Date", selection: $unlockDate, in: Date()..., displayedComponents: [.date, .hourAndMinute])
                     }
-                    // Add Media Section
-                    GroupBox(label: Label("Add Media", systemImage: "plus.app").font(.headline)) {
-                        VStack(spacing: 16) {
-                            HStack(spacing: 16) {
-                                CapsuleMediaButton(title: "Image", systemImage: "photo", color: .blue) {
-                                    showImageActionSheet = true
-                                }
-                                .actionSheet(isPresented: $showImageActionSheet) {
-                                    ActionSheet(title: Text("Add Image"), buttons: [
-                                        .default(Text("Take Photo")) { pickedSourceType = .camera; showUIKitImagePicker = true },
-                                        .default(Text("Choose from Library")) { pickedSourceType = .photoLibrary; showUIKitImagePicker = true },
-                                        .cancel()
-                                    ])
-                                }
-                                CapsuleMediaButton(title: "Video", systemImage: "video", color: .purple) {
-                                    showVideoActionSheet = true
-                                }
-                                .actionSheet(isPresented: $showVideoActionSheet) {
-                                    ActionSheet(title: Text("Add Video"), buttons: [
-                                        .default(Text("Record Video")) { pickedSourceType = .camera; showUIKitVideoPicker = true },
-                                        .default(Text("Choose from Library")) { pickedSourceType = .photoLibrary; showUIKitVideoPicker = true },
-                                        .cancel()
-                                    ])
-                                }
+                    Section(header: Text("Add Media")) {
+                        HStack(spacing: 16) {
+                            CapsuleMediaButton(title: "Image", systemImage: "photo", color: .blue) {
+                                showImageActionSheet = true
                             }
-                            HStack(spacing: 16) {
-                                CapsuleMediaButton(title: "Audio", systemImage: "mic", color: .orange) {
-                                    showAudioRecorderBar = true
-                                }
-                                CapsuleMediaButton(title: "Text", systemImage: "text.bubble", color: .green) {
-                                    showTextInputBar = true
-                                }
+                            .actionSheet(isPresented: $showImageActionSheet) {
+                                ActionSheet(title: Text("Add Image"), buttons: [
+                                    .default(Text("Take Photo")) { pickedSourceType = .camera; showUIKitImagePicker = true },
+                                    .default(Text("Choose from Library")) { pickedSourceType = .photoLibrary; showUIKitImagePicker = true },
+                                    .cancel()
+                                ])
+                            }
+                            CapsuleMediaButton(title: "Video", systemImage: "video", color: .purple) {
+                                showVideoActionSheet = true
+                            }
+                            .actionSheet(isPresented: $showVideoActionSheet) {
+                                ActionSheet(title: Text("Add Video"), buttons: [
+                                    .default(Text("Record Video")) { pickedSourceType = .camera; showUIKitVideoPicker = true },
+                                    .default(Text("Choose from Library")) { pickedSourceType = .photoLibrary; showUIKitVideoPicker = true },
+                                    .cancel()
+                                ])
+                            }
+                            CapsuleMediaButton(title: "Audio", systemImage: "mic", color: .orange) {
+                                showAudioRecorderBar = true
+                            }
+                            CapsuleMediaButton(title: "Text", systemImage: "text.bubble", color: .green) {
+                                showTextInputBar = true
                             }
                         }
                         // Inline text input bar for text
@@ -168,16 +151,12 @@ struct NewCapsuleView: View {
                                     Text("Ready to add recording").foregroundColor(.green).font(.caption)
                                 }
                             }
-                            .padding(.top, 8)
                         }
                     }
-                    // Attached Media Section
                     if !media.isEmpty {
-                        GroupBox(label: Label("Attached Media", systemImage: "paperclip").font(.headline)) {
-                            VStack(spacing: 12) {
-                                ForEach(media) { item in
-                                    CapsuleMediaPreview(media: item, onDelete: { media.removeAll { $0.id == item.id } })
-                                }
+                        Section(header: Text("Attached Media")) {
+                            ForEach(media) { item in
+                                CapsuleMediaPreview(media: item, onDelete: { media.removeAll { $0.id == item.id } }).listRowInsets(EdgeInsets())
                             }
                         }
                     }
@@ -185,8 +164,7 @@ struct NewCapsuleView: View {
                     if showValidation && media.isEmpty {
                         Text("At least one media is required").foregroundColor(.red).font(.caption)
                     }
-                }
-                .padding()
+                }.padding(0)
             }
             .navigationTitle("New Capsule")
             .navigationBarTitleDisplayMode(.inline)
@@ -303,43 +281,3 @@ struct CapsuleMediaButton: View {
         .buttonStyle(PlainButtonStyle())
     }
 }
-
-// MARK: - UIKit Image/Video Picker
-import UIKit
-struct ImageVideoPicker: UIViewControllerRepresentable {
-    let sourceType: UIImagePickerController.SourceType
-    let mediaType: CapsuleMediaType // .image or .video
-    let completion: (URL?) -> Void
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-        let picker = UIImagePickerController()
-        picker.sourceType = sourceType
-        picker.delegate = context.coordinator
-        picker.mediaTypes = mediaType == .image ? ["public.image"] : ["public.movie"]
-        picker.allowsEditing = false
-        return picker
-    }
-    
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-    
-    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let parent: ImageVideoPicker
-        init(_ parent: ImageVideoPicker) { self.parent = parent }
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if parent.mediaType == .image, let imageURL = info[.imageURL] as? URL {
-                parent.completion(imageURL)
-            } else if parent.mediaType == .video, let videoURL = info[.mediaURL] as? URL {
-                parent.completion(videoURL)
-            } else {
-                parent.completion(nil)
-            }
-        }
-        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            parent.completion(nil)
-        }
-    }
-} 
